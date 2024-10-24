@@ -3,15 +3,21 @@ from PIL import Image, ImageFont, ImageDraw
 import string
 import os
 from tqdm import tqdm
+import datetime
 
 # Constants
 FONT_PATH = "RobotoMono-VariableFont_wght.ttf"
 IMG_SIZE = (224, 224)
 ASCII_PRINTABLE = string.printable  # All printable ASCII characters
 
-os.makedirs('out', exist_ok=True)
-os.makedirs('out_mixed', exist_ok=True)
-os.makedirs('out_images', exist_ok=True)
+current_time = datetime.datetime.now().isoformat().replace(':', '-').replace('.', '-')
+
+out_dir = 'out_' + current_time
+out_mixed_dir = 'out_mixed_' + current_time
+out_images_dir = 'out_images_' + current_time
+os.makedirs(out_dir, exist_ok=True)
+os.makedirs(out_mixed_dir, exist_ok=True)
+os.makedirs(out_images_dir, exist_ok=True)
 
 def generate_char_images(font_path, img_size=(224, 224)):
     """Generate 64x64 matrices for each printable ASCII character."""
@@ -35,7 +41,7 @@ def generate_char_images(font_path, img_size=(224, 224)):
         # Draw character onto the image
         draw.text(position, char, fill=0, font=font)
         char_for_filename = char.replace('.', 'dot').replace('/', 'slash').replace(':', 'colon')
-        image.save(f'out/{char_for_filename}.png')
+        image.save(f'{out_dir}/{char_for_filename}.png')
 
         # Convert image to numpy array and normalize
         char_images.append(np.array(image) / 255.0)
@@ -44,9 +50,12 @@ def generate_char_images(font_path, img_size=(224, 224)):
 
 # Generate character images
 raw_images = generate_char_images(FONT_PATH)
-images = [np.random.rand(3, *IMG_SIZE) * 0.2 - 0.1 for _ in raw_images]
-assert np.max(images) <= 0.1
-assert np.min(images) >= -0.1
+# images = [np.random.rand(3, *IMG_SIZE) * 0.2 - 0.1 for _ in raw_images]
+# assert np.max(images) <= 0.1
+# assert np.min(images) >= -0.1
+images = [np.zeros((1, *IMG_SIZE)) for _ in raw_images]
+assert np.max(images) <= 0.0
+assert np.min(images) >= -0.0
 
 import torch
 import torch.nn as nn
@@ -54,8 +63,8 @@ import torch.optim as optim
 import torchvision.models as models
 import torchvision.transforms as T
 import torch.nn.functional as F
-mps_device = torch.device("mps")
-torch.set_default_device(mps_device)
+# mps_device = torch.device("mps")
+torch.set_default_device('cuda')
 
 # Define a transform to convert the tensor to a PIL image
 to_pil = T.ToPILImage()
@@ -88,7 +97,7 @@ def save_img(batch, name):
         tiled_image.paste(img_pil, (col * img_width, row * img_height))
     tiled_image.save(f'{name}.png')
 
-batch_size = 32
+batch_size = 64
 
 # Sample images as torch tensors (batch_size, 3, 224, 224)
 num_images = len(images)
@@ -131,7 +140,7 @@ def apply_gaussian_blur(image: torch.Tensor) -> torch.Tensor:
     # Create a Gaussian kernel
     sigma = torch.rand(tuple(), dtype=torch.float32) * 224/4
     max_divisor = get_divisor(224, sigma)
-    noise_mat = (torch.rand(tuple(), dtype=torch.float32)*0.25 * torch.rand((1, 3, int(224/max_divisor), int(224/max_divisor)))).repeat_interleave(repeats=int(max_divisor), dim=2).repeat_interleave(repeats=int(max_divisor), dim=3)
+    noise_mat = (torch.rand(tuple(), dtype=torch.float32)*0.25 * torch.rand((1, 1, int(224/max_divisor), int(224/max_divisor)))).repeat_interleave(repeats=int(max_divisor), dim=2).repeat_interleave(repeats=int(max_divisor), dim=3)
     image = image + noise_mat
 
     kernel_size = (max(int(sigma), 2) // 2) * 4 - 1
@@ -150,7 +159,7 @@ def apply_gaussian_blur(image: torch.Tensor) -> torch.Tensor:
 
 # Optimizer
 optimizer = optim.SGD([{'params': classifier.parameters(), 'weight_decay': 0.0001, 'lr': 1e-2},
-                       {'params': images, 'lr': 100}], momentum=0.9)
+                       {'params': images, 'lr': 10}], momentum=0.9)
 
 def normalize_img(img):
     with torch.no_grad():
@@ -199,8 +208,8 @@ for epoch in range(1000000000):
         assert torch.max(augmented_batch) <= 1
 
         if step == 0:
-            save_img(augmented_batch, f'out_mixed/mixed_{epoch}')
-            save_img((1 - raw_images[:,None,:,:]) * torch.sigmoid(images) + raw_images[:,None,:,:], f'out_images/images_{epoch}')
+            save_img(augmented_batch, f'{out_mixed_dir}/mixed_{epoch}')
+            save_img((1 - raw_images[:,None,:,:]) * torch.sigmoid(images) + raw_images[:,None,:,:], f'{out_images_dir}/images_{epoch}')
         
         normalized_batch = augmented_batch * 2 - 1
 
