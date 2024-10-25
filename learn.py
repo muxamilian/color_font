@@ -112,7 +112,7 @@ classifier = models.resnet18(pretrained=True)
 classifier.fc = nn.Linear(classifier.fc.in_features, num_images)  # Adjust output layer
 
 def add_noise(img):
-    return img + torch.rand(tuple(), dtype=torch.float32)*0.25 * torch.randn_like(img)
+    return img + torch.rand(tuple(), dtype=torch.float32)*0.5 * torch.randn_like(img)
 
 def get_gaussian_kernel(kernel_size: int, sigma: float) -> torch.Tensor:
     """Creates a 2D Gaussian kernel."""
@@ -140,7 +140,7 @@ def apply_gaussian_blur(image: torch.Tensor) -> torch.Tensor:
     # Create a Gaussian kernel
     sigma = torch.rand(tuple(), dtype=torch.float32) * 224/4
     max_divisor = get_divisor(224, sigma)
-    noise_mat = (torch.rand(tuple(), dtype=torch.float32)*0.25 * torch.rand((1, 1, int(224/max_divisor), int(224/max_divisor)))).repeat_interleave(repeats=int(max_divisor), dim=2).repeat_interleave(repeats=int(max_divisor), dim=3)
+    noise_mat = (torch.rand(tuple(), dtype=torch.float32)*0.5 * torch.rand((1, 1, int(224/max_divisor), int(224/max_divisor)))).repeat_interleave(repeats=int(max_divisor), dim=2).repeat_interleave(repeats=int(max_divisor), dim=3)
     image = image + noise_mat
 
     kernel_size = (max(int(sigma), 2) // 2) * 4 - 1
@@ -159,7 +159,7 @@ def apply_gaussian_blur(image: torch.Tensor) -> torch.Tensor:
 
 # Optimizer
 optimizer = optim.SGD([{'params': classifier.parameters(), 'weight_decay': 0.0001, 'lr': 1e-2},
-                       {'params': images, 'lr': 10}], momentum=0.9)
+                       {'params': images, 'lr': 30}], momentum=0.9)
 
 def normalize_img(img):
     with torch.no_grad():
@@ -184,7 +184,7 @@ criterion = nn.CrossEntropyLoss()
 
 # Training loop
 for epoch in range(1000000000):
-    for step in tqdm(range(100)):
+    for step in tqdm(range(1000)):
         optimizer.zero_grad()
 
         # Randomly sample a batch of images with replacement
@@ -198,7 +198,7 @@ for epoch in range(1000000000):
                     apply_gaussian_blur(
                         # add_noise(img)[None,:,:,:], 
                         img[None,:,:,:]
-                    ).squeeze()
+                    ).squeeze(0)
                 )
             )
         for img in mixed_batch]
@@ -212,6 +212,7 @@ for epoch in range(1000000000):
             save_img((1 - raw_images[:,None,:,:]) * torch.sigmoid(images) + raw_images[:,None,:,:], f'{out_images_dir}/images_{epoch}')
         
         normalized_batch = augmented_batch * 2 - 1
+        normalized_batch = normalized_batch.expand(-1, 3, -1, -1)
 
         # Forward pass through the classifier
         outputs = classifier(normalized_batch)
