@@ -159,7 +159,7 @@ def apply_gaussian_blur(image: torch.Tensor) -> torch.Tensor:
 
 # Optimizer
 optimizer = optim.SGD([{'params': classifier.parameters(), 'weight_decay': 0.0001, 'lr': 1e-2},
-                       {'params': images, 'lr': 30}], momentum=0.9)
+                       {'params': images, 'lr': 10}], momentum=0.9)
 
 def normalize_img(img):
     with torch.no_grad():
@@ -175,8 +175,15 @@ def total_variation_loss(batch):
     diff_y = batch[:, :, :-1, :] - batch[:, :, 1:, :]
     
     # Compute the total variation loss by summing the absolute differences
-    loss = torch.mean(torch.abs(diff_x)) + torch.mean(torch.abs(diff_y))
-    
+    loss = torch.mean(diff_x**2) + torch.mean(diff_y**2)
+    assert len(loss.shape) == 0
+
+    return loss
+
+def deviation_loss(batch):
+    loss = torch.mean(batch**2)
+    assert len(loss.shape) == 0
+
     return loss
 
 # Cross-entropy loss
@@ -204,8 +211,8 @@ for epoch in range(1000000000):
         for img in mixed_batch]
         augmented_batch = torch.stack(augmented_single)
         
-        assert torch.min(augmented_batch) >= 0
-        assert torch.max(augmented_batch) <= 1
+        assert torch.min(augmented_batch) >= 0, f'{torch.min(augmented_batch)}'
+        assert torch.max(augmented_batch) <= 1, f'{torch.max(augmented_batch)}'
 
         if step == 0:
             save_img(augmented_batch, f'{out_mixed_dir}/mixed_{epoch}')
@@ -220,15 +227,15 @@ for epoch in range(1000000000):
         # Create targets (the correct image indices)
         targets = idx
 
-        # smoothness_loss = total_variation_loss(images[idx])
+        smoothness_loss = deviation_loss(images[idx])
         # Compute loss
         classification_loss = criterion(outputs, targets)
         
-        loss = classification_loss# + 0.01 * smoothness_loss
+        loss = classification_loss + 3. * smoothness_loss
         # Backpropagation
         loss.backward()
 
         # Update the classifier and the images
         optimizer.step()
 
-    print(f'Epoch {epoch}, Loss: {loss.item()}, Class: {classification_loss.item()}')#, Smooth: {smoothness_loss.item()}')
+    print(f'Epoch {epoch}, Loss: {loss.item()}, Class: {classification_loss.item()}, Smooth: {smoothness_loss.item()}')
