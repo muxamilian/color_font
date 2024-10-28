@@ -1,52 +1,14 @@
 import numpy as np
-from PIL import Image, ImageFont, ImageDraw
-import string
-import os
 from tqdm import tqdm
-import datetime
-
-# Constants
-FONT_PATH = "RobotoMono-VariableFont_wght.ttf"
-IMG_SIZE = (224, 224)
-ASCII_PRINTABLE = string.printable  # All printable ASCII characters
+from base import *
+import os
 
 current_time = datetime.datetime.now().isoformat().replace(':', '-').replace('.', '-')
-
-out_dir = 'out_' + current_time
 out_mixed_dir = 'out_mixed_' + current_time
 out_images_dir = 'out_images_' + current_time
-os.makedirs(out_dir, exist_ok=True)
+
 os.makedirs(out_mixed_dir, exist_ok=True)
 os.makedirs(out_images_dir, exist_ok=True)
-
-def generate_char_images(font_path, img_size=(224, 224)):
-    """Generate 64x64 matrices for each printable ASCII character."""
-    # Specify font size in pixels and the image's DPI
-    font_size = 160
-    font = ImageFont.truetype(font_path, size=font_size)  # Adjust size to fit in 64x64
-    char_images = []
-
-    for char in ASCII_PRINTABLE:
-        if len(char.strip()) == 0:
-            continue
-        # Create a blank image and a drawing context
-        image = Image.new('L', img_size, color=255)  # 'L' mode for grayscale
-        draw = ImageDraw.Draw(image)
-        
-        # Get character size and calculate positioning
-        text_left, text_top, text_right, text_bottom = draw.textbbox((0,0), char, font=font, font_size=font_size, spacing=0) 
-        text_size = (text_right - text_left, text_bottom - text_top)
-        position = ((img_size[0] - text_size[0]) // 2, 0)
-        
-        # Draw character onto the image
-        draw.text(position, char, fill=0, font=font)
-        char_for_filename = char.replace('.', 'dot').replace('/', 'slash').replace(':', 'colon')
-        image.save(f'{out_dir}/{char_for_filename}.png')
-
-        # Convert image to numpy array and normalize
-        char_images.append(np.array(image) / 255.0)
-    
-    return char_images
 
 # Generate character images
 raw_images = generate_char_images(FONT_PATH)
@@ -61,41 +23,9 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torchvision.models as models
-import torchvision.transforms as T
 import torch.nn.functional as F
-# mps_device = torch.device("mps")
-torch.set_default_device('cuda')
-
-# Define a transform to convert the tensor to a PIL image
-to_pil = T.ToPILImage()
-
-def save_img(batch, name):
-    
-    n_columns = 10
-    n_images = batch.size(0)
-    n_rows = (n_images + n_columns - 1) // n_columns  # Calculate required rows
-
-    # Define a transform to convert the tensor to a PIL image
-    to_pil = T.ToPILImage()
-
-    # Image size (assuming all images are the same size)
-    img_width, img_height = 224, 224
-
-    # Create a blank canvas for the tiled image
-    tiled_image = Image.new('RGB', (n_columns * img_width, n_rows * img_height))
-
-    # Loop over each image and paste it on the canvas
-    for i in range(n_images):
-        img_tensor = batch[i]
-        img_pil = to_pil(img_tensor)  # Convert to PIL Image
-        
-        # Calculate position in the grid
-        row = i // n_columns
-        col = i % n_columns
-        
-        # Paste the image in the correct position
-        tiled_image.paste(img_pil, (col * img_width, row * img_height))
-    tiled_image.save(f'{name}.png')
+mps_device = torch.device("mps")
+# torch.set_default_device('cuda')
 
 batch_size = 64
 
