@@ -45,14 +45,28 @@ rescaled_images = [rescale(item, min_color, max_color, 0.0, 1.0) for item in con
 def mix_colors(img, color_min, color_max):
     new_img = np.tile(color_min[None, None, :], (224,224,1)) * (1.-img[:,:,None]) + img[:,:,None] * np.tile(color_max[None, None, :], (224,224,1))
     return new_img
-color_dark = [0, 0, 170]
-color_bright = [254, 1, 154]
+# color_dark = [0, 0, 170] #purple
+# color_bright = [254, 1, 154] #pink
+# color_dark = [100, 0, 0] #dark red
+# color_bright = [255, 0, 0] #red
+# color_dark = [0, 0, 0] #black
+# color_bright = [200, 200, 0] #yellow
+# color_dark = [0, 100, 0] #dark green
+# color_bright = [0, 200, 0] #green
+# color_dark = [50, 50, 50] #dark grey
+# color_bright = [130, 130, 180] #bluish
+# color_dark = [255, 0, 0] #red
+# color_bright = [0, 0, 255] #blue
+# color_dark = [50, 50, 50] #dark grey
+# color_bright = [130, 130, 130] #bright gray
+color_dark = [0, 0, 0] #dark grey
+color_bright = [150, 150, 150] #bright gray
 color_mixed = [mix_colors(item, np.array(color_dark)/255., np.array(color_bright)/255.) for item in rescaled_images]
-save_img(torch.stack([torch.tensor(np.transpose(item, (2, 0, 1)), dtype=torch.float32) for item in color_mixed], dim=0), 'mix_colors')
+# save_img(torch.stack([torch.tensor(np.transpose(item, (2, 0, 1)), dtype=torch.float32) for item in color_mixed], dim=0), 'mix_colors')
 
 masked = [item * (1.-char[:,:,None]) + char[:,:,None] for item, char in zip(color_mixed, char_images)]
 
-save_img(torch.stack([torch.tensor(np.transpose(item, (2, 0, 1)), dtype=torch.float32) for item in masked], dim=0), 'final')
+# save_img(torch.stack([torch.tensor(np.transpose(item, (2, 0, 1)), dtype=torch.float32) for item in masked], dim=0), 'final')
 
 def extract_character_from_image(img_np_array, position, text_size, size):
     # Calculate the bounds of the crop
@@ -74,13 +88,14 @@ for i in range(len(masked)):
     crop = extract_character_from_image(current_image, positions[i], text_sizes[i], sizes[i])
     as_pytorch = to_pil(torch.tensor(crop, dtype=torch.float32))
     final_extracted_char.append(as_pytorch)
-    as_pytorch.save(f'extracted/{i}.png')
+    # as_pytorch.save(f'extracted/{i}.png')
 
 max_width = max([item[0] for item in text_sizes])
 max_height = max([item[1] for item in text_sizes])
 
-text = 'Gabi & Max forever!!!'
-new_text = Image.new('RGB', (len(text) * max_width, max_height + 10), color=(255, 255, 255))
+text = 'Gabi & Max forever!!!;'
+# text = actual_ascii
+new_text = Image.new('RGB', (len(text) * max_width, max_height), color=(255, 255, 255))
 
 for i in range(len(text)):
     current_char = text[i]
@@ -88,6 +103,8 @@ for i in range(len(text)):
         continue
     char_index = actual_ascii.index(current_char)
     char_pos_vert = sizes[char_index][1]
-    new_text.paste(final_extracted_char[char_index], (i * max_width, char_pos_vert))
+    new_text.paste(final_extracted_char[char_index], (i * max_width, char_pos_vert - min([item[1] for item in sizes])))
 
 new_text.save('text.png')
+
+# TODO: font with not-constant width, different color combinations
