@@ -2,6 +2,7 @@ import numpy as np
 from tqdm import tqdm
 from base import *
 import os
+import datetime
 
 current_time = datetime.datetime.now().isoformat().replace(':', '-').replace('.', '-')
 out_mixed_dir = 'out_mixed_' + current_time
@@ -11,7 +12,7 @@ os.makedirs(out_mixed_dir, exist_ok=True)
 os.makedirs(out_images_dir, exist_ok=True)
 
 # Generate character images
-raw_images = generate_char_images(FONT_PATH)
+raw_images, sizes, text_sizes, positions, actual_ascii = generate_char_images(FONT_PATH)
 # images = [np.random.rand(3, *IMG_SIZE) * 0.2 - 0.1 for _ in raw_images]
 # assert np.max(images) <= 0.1
 # assert np.min(images) >= -0.1
@@ -24,8 +25,8 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision.models as models
 import torch.nn.functional as F
-mps_device = torch.device("mps")
-# torch.set_default_device('cuda')
+# mps_device = torch.device("mps")
+torch.set_default_device('cuda')
 
 batch_size = 64
 
@@ -89,7 +90,7 @@ def apply_gaussian_blur(image: torch.Tensor) -> torch.Tensor:
 
 # Optimizer
 optimizer = optim.SGD([{'params': classifier.parameters(), 'weight_decay': 0.0001, 'lr': 1e-2},
-                       {'params': images, 'lr': 10}], momentum=0.9)
+                       {'params': images, 'lr': 30}], momentum=0.9)
 
 def normalize_img(img):
     with torch.no_grad():

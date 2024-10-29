@@ -2,14 +2,14 @@ from PIL import Image, ImageFont, ImageDraw
 import string
 import torchvision.transforms as T
 import os
-import datetime
 import numpy as np
 
 out_dir = 'out' 
 os.makedirs(out_dir, exist_ok=True)
 
 # Constants
-FONT_PATH = "RobotoMono-VariableFont_wght.ttf"
+# FONT_PATH = "RobotoMono-VariableFont_wght.ttf"
+FONT_PATH = "Roboto-Regular.ttf"
 IMG_SIZE = (224, 224)
 ASCII_PRINTABLE = string.printable  # All printable ASCII characters
 
