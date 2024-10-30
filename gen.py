@@ -2,8 +2,8 @@ from base import *
 import torch
 
 # Sizes for each character are [text_left, text_top, text_right, text_bottom], text_sizes are [text_right - text_left, text_bottom - text_top], positions are [(img_size[0] - text_size[0]) // 2, 0]
-char_images, sizes, text_sizes, positions, actual_ascii = generate_char_images(FONT_PATH)
-parsed_images = [item[:,:,0] for item in parse_tiled_image('/Users/max/src/color_font/out_images_2024-10-26T13-36-11-462659/images_75.png')]    
+char_images, sizes, text_sizes, positions, actual_ascii, space_width = generate_char_images(FONT_PATH)
+parsed_images = [item[:,:,0] for item in parse_tiled_image('out_images_2024-10-30T05-27-27-590906/images_42.png')]    
 
 assert len(char_images) == len(parsed_images)
 
@@ -51,16 +51,16 @@ def mix_colors(img, color_min, color_max):
 # color_bright = [255, 0, 0] #red
 # color_dark = [0, 0, 0] #black
 # color_bright = [200, 200, 0] #yellow
-# color_dark = [0, 100, 0] #dark green
-# color_bright = [0, 200, 0] #green
-# color_dark = [50, 50, 50] #dark grey
-# color_bright = [130, 130, 180] #bluish
+# color_dark = [0, 60, 0] #dark green
+# color_bright = [0, 160, 0] #green
+color_dark = [50, 50, 50] #dark grey
+color_bright = [140, 140, 190] #bluish
 # color_dark = [255, 0, 0] #red
 # color_bright = [0, 0, 255] #blue
 # color_dark = [50, 50, 50] #dark grey
 # color_bright = [130, 130, 130] #bright gray
-color_dark = [0, 0, 0] #dark grey
-color_bright = [150, 150, 150] #bright gray
+# color_dark = [0, 0, 0] #black
+# color_bright = [150, 150, 150] #bright gray
 color_mixed = [mix_colors(item, np.array(color_dark)/255., np.array(color_bright)/255.) for item in rescaled_images]
 # save_img(torch.stack([torch.tensor(np.transpose(item, (2, 0, 1)), dtype=torch.float32) for item in color_mixed], dim=0), 'mix_colors')
 
@@ -90,12 +90,25 @@ for i in range(len(masked)):
     final_extracted_char.append(as_pytorch)
     # as_pytorch.save(f'extracted/{i}.png')
 
-max_width = max([item[0] for item in text_sizes])
+# max_width = max([item[0] for item in text_sizes])
 max_height = max([item[1] for item in text_sizes])
 
 text = 'Gabi & Max forever!!!;'
 # text = actual_ascii
-new_text = Image.new('RGB', (len(text) * max_width, max_height), color=(255, 255, 255))
+
+sum_width = 0
+cum_widths = []
+for i in range(len(text)):
+    current_char = text[i]
+    if current_char == ' ':
+        cum_widths.append(sum_width)
+        sum_width += space_width
+        continue
+    char_index = actual_ascii.index(current_char)
+    cum_widths.append(sum_width)
+    sum_width += text_sizes[char_index][0]
+
+new_text = Image.new('RGB', (sum_width, max_height), color=(255, 255, 255))
 
 for i in range(len(text)):
     current_char = text[i]
@@ -103,7 +116,7 @@ for i in range(len(text)):
         continue
     char_index = actual_ascii.index(current_char)
     char_pos_vert = sizes[char_index][1]
-    new_text.paste(final_extracted_char[char_index], (i * max_width, char_pos_vert - min([item[1] for item in sizes])))
+    new_text.paste(final_extracted_char[char_index], (cum_widths[i], char_pos_vert - min([item[1] for item in sizes])))
 
 new_text.save('text.png')
 

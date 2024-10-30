@@ -14,6 +14,7 @@ IMG_SIZE = (224, 224)
 ASCII_PRINTABLE = string.printable  # All printable ASCII characters
 
 def generate_char_images(font_path, img_size=(224, 224)):
+    space_width = None
     """Generate 64x64 matrices for each printable ASCII character."""
     # Specify font size in pixels and the image's DPI
     font_size = 160
@@ -25,17 +26,21 @@ def generate_char_images(font_path, img_size=(224, 224)):
     actual_ascii = ''
 
     for char in ASCII_PRINTABLE:
-        if len(char.strip()) == 0:
+        if len(char.strip()) == 0 and char != ' ':
             continue
-        actual_ascii += char
         # Create a blank image and a drawing context
         image = Image.new('L', img_size, color=255)  # 'L' mode for grayscale
         draw = ImageDraw.Draw(image)
         
         # Get character size and calculate positioning
         text_left, text_top, text_right, text_bottom = draw.textbbox((0,0), char, font=font, font_size=font_size, spacing=0) 
-        sizes.append([text_left, text_top, text_right, text_bottom])
         text_size = (text_right - text_left, text_bottom - text_top)
+        if char == ' ':
+            print('I am here')
+            space_width = text_size[0]
+            continue
+        actual_ascii += char
+        sizes.append([text_left, text_top, text_right, text_bottom])
         text_sizes.append(text_size)
         position = ((img_size[0] - text_size[0]) // 2, 0)
         positions.append(position)
@@ -48,7 +53,7 @@ def generate_char_images(font_path, img_size=(224, 224)):
         # Convert image to numpy array and normalize
         char_images.append(np.array(image) / 255.0)
     
-    return char_images, sizes, text_sizes, positions, actual_ascii
+    return char_images, sizes, text_sizes, positions, actual_ascii, space_width
 
 
 def save_img(batch, name):

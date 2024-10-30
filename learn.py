@@ -12,7 +12,7 @@ os.makedirs(out_mixed_dir, exist_ok=True)
 os.makedirs(out_images_dir, exist_ok=True)
 
 # Generate character images
-raw_images, sizes, text_sizes, positions, actual_ascii = generate_char_images(FONT_PATH)
+raw_images, sizes, text_sizes, positions, actual_ascii, _ = generate_char_images(FONT_PATH)
 # images = [np.random.rand(3, *IMG_SIZE) * 0.2 - 0.1 for _ in raw_images]
 # assert np.max(images) <= 0.1
 # assert np.min(images) >= -0.1
