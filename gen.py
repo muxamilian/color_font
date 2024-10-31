@@ -51,10 +51,10 @@ def mix_colors(img, color_min, color_max):
 # color_bright = [255, 0, 0] #red
 # color_dark = [0, 0, 0] #black
 # color_bright = [200, 200, 0] #yellow
-# color_dark = [0, 60, 0] #dark green
-# color_bright = [0, 160, 0] #green
-color_dark = [50, 50, 50] #dark grey
-color_bright = [140, 140, 190] #bluish
+color_dark = [0, 60, 0] #dark green
+color_bright = [0, 160, 0] #green
+# color_dark = [50, 50, 50] #dark grey
+# color_bright = [140, 140, 190] #bluish
 # color_dark = [255, 0, 0] #red
 # color_bright = [0, 0, 255] #blue
 # color_dark = [50, 50, 50] #dark grey
