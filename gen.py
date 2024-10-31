@@ -53,14 +53,18 @@ def mix_colors(img, color_min, color_max):
 # color_bright = [200, 200, 0] #yellow
 # color_dark = [0, 60, 0] #dark green
 # color_bright = [0, 160, 0] #green
-color_dark = [50, 50, 50] #dark grey
-color_bright = [140, 140, 190] #bluish
+# color_dark = [50, 50, 50] #dark grey
+# color_bright = [140, 140, 190] #bluish
 # color_dark = [255, 0, 0] #red
 # color_bright = [0, 0, 255] #blue
 # color_dark = [50, 50, 50] #dark grey
 # color_bright = [130, 130, 130] #bright gray
 # color_dark = [0, 0, 0] #black
 # color_bright = [150, 150, 150] #bright gray
+# color_dark = [180, 180, 0] #black
+# color_bright = [220, 220, 0] #yellow
+color_dark = [80, 101, 77] #ebony
+color_bright = [156, 145, 119] #archtichoke
 color_mixed = [mix_colors(item, np.array(color_dark)/255., np.array(color_bright)/255.) for item in rescaled_images]
 # save_img(torch.stack([torch.tensor(np.transpose(item, (2, 0, 1)), dtype=torch.float32) for item in color_mixed], dim=0), 'mix_colors')
 
@@ -93,7 +97,7 @@ for i in range(len(masked)):
 # max_width = max([item[0] for item in text_sizes])
 max_height = max([item[1] for item in text_sizes])
 
-text = 'Gabi & Max forever!!!;'
+text = 'Deep Learning Versatile Platform'
 # text = actual_ascii
 
 sum_width = 0
