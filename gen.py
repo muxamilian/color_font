@@ -51,8 +51,8 @@ def mix_colors(img, color_min, color_max):
 # color_bright = [255, 0, 0] #red
 # color_dark = [0, 0, 0] #black
 # color_bright = [200, 200, 0] #yellow
-color_dark = [0, 60, 0] #dark green
-color_bright = [0, 160, 0] #green
+# color_dark = [0, 60, 0] #dark green
+# color_bright = [0, 160, 0] #green
 # color_dark = [50, 50, 50] #dark grey
 # color_bright = [140, 140, 190] #bluish
 # color_dark = [255, 0, 0] #red
@@ -61,12 +61,16 @@ color_bright = [0, 160, 0] #green
 # color_bright = [130, 130, 130] #bright gray
 # color_dark = [0, 0, 0] #black
 # color_bright = [150, 150, 150] #bright gray
+# color_dark = [180, 180, 0] #black
+# color_bright = [220, 220, 0] #yellow
+color_dark = [80, 101, 77] #ebony
+color_bright = [156, 145, 119] #archtichoke
 color_mixed = [mix_colors(item, np.array(color_dark)/255., np.array(color_bright)/255.) for item in rescaled_images]
 # save_img(torch.stack([torch.tensor(np.transpose(item, (2, 0, 1)), dtype=torch.float32) for item in color_mixed], dim=0), 'mix_colors')
 
-masked = [item * (1.-char[:,:,None]) + char[:,:,None] for item, char in zip(color_mixed, char_images)]
+masked = [np.concatenate((item * (1.-char[:,:,None]) + char[:,:,None], 1.-char[:,:,None]), axis=-1) for item, char in zip(color_mixed, char_images)]
 
-# save_img(torch.stack([torch.tensor(np.transpose(item, (2, 0, 1)), dtype=torch.float32) for item in masked], dim=0), 'final')
+save_img(torch.stack([torch.tensor(np.transpose(item, (2, 0, 1)), dtype=torch.float32) for item in masked], dim=0), 'final')
 
 def extract_character_from_image(img_np_array, position, text_size, size):
     # Calculate the bounds of the crop
@@ -86,14 +90,13 @@ final_extracted_char = []
 for i in range(len(masked)):
     current_image = np.transpose(masked[i], (2, 0, 1))
     crop = extract_character_from_image(current_image, positions[i], text_sizes[i], sizes[i])
-    as_pytorch = to_pil(torch.tensor(crop, dtype=torch.float32))
-    final_extracted_char.append(as_pytorch)
-    # as_pytorch.save(f'extracted/{i}.png')
+    as_pil = to_pil(torch.tensor(crop, dtype=torch.float32))
+    final_extracted_char.append(as_pil)
+    as_pil.save(f'extracted/{i}.png')
 
-# max_width = max([item[0] for item in text_sizes])
 max_height = max([item[1] for item in text_sizes])
 
-text = 'Gabi & Max forever!!!;'
+text = 'Deep Learning Versatile Platform'
 # text = actual_ascii
 
 sum_width = 0
@@ -108,7 +111,7 @@ for i in range(len(text)):
     cum_widths.append(sum_width)
     sum_width += text_sizes[char_index][0]
 
-new_text = Image.new('RGB', (sum_width, max_height), color=(255, 255, 255))
+new_text = Image.new('RGBA', (sum_width, max_height), color=(255, 255, 255, 0))
 
 for i in range(len(text)):
     current_char = text[i]
