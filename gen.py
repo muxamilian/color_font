@@ -68,9 +68,9 @@ color_bright = [156, 145, 119] #archtichoke
 color_mixed = [mix_colors(item, np.array(color_dark)/255., np.array(color_bright)/255.) for item in rescaled_images]
 # save_img(torch.stack([torch.tensor(np.transpose(item, (2, 0, 1)), dtype=torch.float32) for item in color_mixed], dim=0), 'mix_colors')
 
-masked = [item * (1.-char[:,:,None]) + char[:,:,None] for item, char in zip(color_mixed, char_images)]
+masked = [np.concatenate((item * (1.-char[:,:,None]) + char[:,:,None], 1.-char[:,:,None]), axis=-1) for item, char in zip(color_mixed, char_images)]
 
-# save_img(torch.stack([torch.tensor(np.transpose(item, (2, 0, 1)), dtype=torch.float32) for item in masked], dim=0), 'final')
+save_img(torch.stack([torch.tensor(np.transpose(item, (2, 0, 1)), dtype=torch.float32) for item in masked], dim=0), 'final')
 
 def extract_character_from_image(img_np_array, position, text_size, size):
     # Calculate the bounds of the crop
@@ -90,11 +90,10 @@ final_extracted_char = []
 for i in range(len(masked)):
     current_image = np.transpose(masked[i], (2, 0, 1))
     crop = extract_character_from_image(current_image, positions[i], text_sizes[i], sizes[i])
-    as_pytorch = to_pil(torch.tensor(crop, dtype=torch.float32))
-    final_extracted_char.append(as_pytorch)
-    # as_pytorch.save(f'extracted/{i}.png')
+    as_pil = to_pil(torch.tensor(crop, dtype=torch.float32))
+    final_extracted_char.append(as_pil)
+    as_pil.save(f'extracted/{i}.png')
 
-# max_width = max([item[0] for item in text_sizes])
 max_height = max([item[1] for item in text_sizes])
 
 text = 'Deep Learning Versatile Platform'
@@ -112,7 +111,7 @@ for i in range(len(text)):
     cum_widths.append(sum_width)
     sum_width += text_sizes[char_index][0]
 
-new_text = Image.new('RGB', (sum_width, max_height), color=(255, 255, 255))
+new_text = Image.new('RGBA', (sum_width, max_height), color=(255, 255, 255, 0))
 
 for i in range(len(text)):
     current_char = text[i]
