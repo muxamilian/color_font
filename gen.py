@@ -99,34 +99,52 @@ for i in range(len(masked)):
 
 max_height = max([item[1] for item in text_sizes])
 
-text = 'The quick brown fox jumps over the lazy dog'
+text = 'The quick brown fox jumps\nover the lazy dog\n0123456789'
 # text = actual_ascii
 
-sum_width = 0
-cum_widths = []
-for i in range(len(text)):
-    current_char = text[i]
-    if current_char == ' ':
+# Split the text into lines based on \n
+lines = text.split('\n')
+
+# Calculate the width of each line and the cumulative width positions
+line_widths = []
+line_cum_widths = []
+
+for line in lines:
+    sum_width = 0
+    cum_widths = []
+    for i in range(len(line)):
+        current_char = line[i]
+        if current_char == ' ':
+            cum_widths.append(sum_width)
+            sum_width += space_width
+            continue
+        char_index = actual_ascii.index(current_char)
         cum_widths.append(sum_width)
-        sum_width += space_width
-        continue
-    char_index = actual_ascii.index(current_char)
-    cum_widths.append(sum_width)
-    sum_width += text_sizes[char_index][0]
+        sum_width += text_sizes[char_index][0]
+    line_widths.append(sum_width)
+    line_cum_widths.append(cum_widths)
 
+# Determine the total height for the multiline text
+total_height = max_height * len(lines)
 # With alpha
-new_text = Image.new('RGBA', (sum_width, max_height), color=(255, 255, 255, 0))
+# new_text = Image.new('RGBA', (sum_width, max_height), color=(255, 255, 255, 0))
 # Without alpha
-new_text = Image.new('RGBA', (sum_width, max_height), color=(255, 255, 255, 255))
+new_text = Image.new('RGBA', (max(line_widths), total_height + 8), color=(255, 255, 255, 255))
 
-for i in range(len(text)):
-    current_char = text[i]
-    if current_char == ' ':
-        continue
-    char_index = actual_ascii.index(current_char)
-    char_pos_vert = sizes[char_index][1]
-    new_text.paste(final_extracted_char[char_index], (cum_widths[i], char_pos_vert - min([item[1] for item in sizes])))
+# Paste each line with centering
+for line_index, line in enumerate(lines):
+    line_width = line_widths[line_index]
+    cum_widths = line_cum_widths[line_index]
+    y_offset = line_index * max_height
+    x_offset = (max(line_widths) - line_width) // 2  # Centering horizontally
+
+    for i in range(len(line)):
+        current_char = line[i]
+        if current_char == ' ':
+            continue
+        char_index = actual_ascii.index(current_char)
+        char_pos_vert = sizes[char_index][1]
+        new_text.paste(final_extracted_char[char_index], 
+                       (x_offset + cum_widths[i], y_offset + char_pos_vert - min([item[1] for item in sizes])))
 
 new_text.save('text.png')
-
-# TODO: font with not-constant width, different color combinations
