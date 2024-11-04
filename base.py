@@ -36,7 +36,6 @@ def generate_char_images(font_path, img_size=(224, 224)):
         text_left, text_top, text_right, text_bottom = draw.textbbox((0,0), char, font=font, font_size=font_size, spacing=0) 
         text_size = (text_right - text_left, text_bottom - text_top)
         if char == ' ':
-            print('I am here')
             space_width = text_size[0]
             continue
         actual_ascii += char

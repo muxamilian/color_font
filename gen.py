@@ -47,8 +47,8 @@ def mix_colors(img, color_min, color_max):
     return new_img
 # color_dark = [0, 0, 170] #purple
 # color_bright = [254, 1, 154] #pink
-# color_dark = [100, 0, 0] #dark red
-# color_bright = [255, 0, 0] #red
+color_dark = [100, 0, 0] #dark red
+color_bright = [255, 0, 0] #red
 # color_dark = [0, 0, 0] #black
 # color_bright = [200, 200, 0] #yellow
 # color_dark = [0, 60, 0] #dark green
@@ -63,12 +63,15 @@ def mix_colors(img, color_min, color_max):
 # color_bright = [150, 150, 150] #bright gray
 # color_dark = [180, 180, 0] #black
 # color_bright = [220, 220, 0] #yellow
-color_dark = [80, 101, 77] #ebony
-color_bright = [156, 145, 119] #archtichoke
+# color_dark = [80, 101, 77] #ebony
+# color_bright = [156, 145, 119] #archtichoke
 color_mixed = [mix_colors(item, np.array(color_dark)/255., np.array(color_bright)/255.) for item in rescaled_images]
 # save_img(torch.stack([torch.tensor(np.transpose(item, (2, 0, 1)), dtype=torch.float32) for item in color_mixed], dim=0), 'mix_colors')
 
-masked = [np.concatenate((item * (1.-char[:,:,None]) + char[:,:,None], 1.-char[:,:,None]), axis=-1) for item, char in zip(color_mixed, char_images)]
+# With alpha
+# masked = [np.concatenate((item * (1.-char[:,:,None]) + char[:,:,None], 1.-char[:,:,None]), axis=-1) for item, char in zip(color_mixed, char_images)]
+# Without alpha
+masked = [np.concatenate((item * (1.-char[:,:,None]) + char[:,:,None], np.ones_like(char[:,:,None])), axis=-1) for item, char in zip(color_mixed, char_images)]
 
 save_img(torch.stack([torch.tensor(np.transpose(item, (2, 0, 1)), dtype=torch.float32) for item in masked], dim=0), 'final')
 
@@ -96,7 +99,7 @@ for i in range(len(masked)):
 
 max_height = max([item[1] for item in text_sizes])
 
-text = 'Deep Learning Versatile Platform'
+text = 'The quick brown fox jumps over the lazy dog'
 # text = actual_ascii
 
 sum_width = 0
@@ -111,7 +114,10 @@ for i in range(len(text)):
     cum_widths.append(sum_width)
     sum_width += text_sizes[char_index][0]
 
+# With alpha
 new_text = Image.new('RGBA', (sum_width, max_height), color=(255, 255, 255, 0))
+# Without alpha
+new_text = Image.new('RGBA', (sum_width, max_height), color=(255, 255, 255, 255))
 
 for i in range(len(text)):
     current_char = text[i]
