@@ -47,8 +47,8 @@ def mix_colors(img, color_min, color_max):
     return new_img
 # color_dark = [0, 0, 170] #purple
 # color_bright = [254, 1, 154] #pink
-color_dark = [100, 0, 0] #dark red
-color_bright = [255, 0, 0] #red
+color_dark = [120, 0, 0] #dark red
+color_bright = [210, 0, 0] #red
 # color_dark = [0, 0, 0] #black
 # color_bright = [200, 200, 0] #yellow
 # color_dark = [0, 60, 0] #dark green
