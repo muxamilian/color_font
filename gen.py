@@ -1,5 +1,6 @@
 from base import *
 import torch
+import json
 
 # Sizes for each character are [text_left, text_top, text_right, text_bottom], text_sizes are [text_right - text_left, text_bottom - text_top], positions are [(img_size[0] - text_size[0]) // 2, 0]
 char_images, sizes, text_sizes, positions, actual_ascii, space_width = generate_char_images(FONT_PATH)
@@ -47,8 +48,8 @@ def mix_colors(img, color_min, color_max):
     return new_img
 # color_dark = [0, 0, 170] #purple
 # color_bright = [254, 1, 154] #pink
-color_dark = [120, 0, 0] #dark red
-color_bright = [210, 0, 0] #red
+color_dark = [110, 0, 0] #dark red
+color_bright = [255, 0, 0] #red
 # color_dark = [0, 0, 0] #black
 # color_bright = [200, 200, 0] #yellow
 # color_dark = [0, 60, 0] #dark green
@@ -73,7 +74,7 @@ color_mixed = [mix_colors(item, np.array(color_dark)/255., np.array(color_bright
 # Without alpha
 masked = [np.concatenate((item * (1.-char[:,:,None]) + char[:,:,None], np.ones_like(char[:,:,None])), axis=-1) for item, char in zip(color_mixed, char_images)]
 
-save_img(torch.stack([torch.tensor(np.transpose(item, (2, 0, 1)), dtype=torch.float32) for item in masked], dim=0), 'final')
+# save_img(torch.stack([torch.tensor(np.transpose(item, (2, 0, 1)), dtype=torch.float32) for item in masked], dim=0), 'final')
 
 def extract_character_from_image(img_np_array, position, text_size, size):
     # Calculate the bounds of the crop
@@ -95,11 +96,13 @@ for i in range(len(masked)):
     crop = extract_character_from_image(current_image, positions[i], text_sizes[i], sizes[i])
     as_pil = to_pil(torch.tensor(crop, dtype=torch.float32))
     final_extracted_char.append(as_pil)
-    as_pil.save(f'extracted/{i}.png')
+    # as_pil.save(f'extracted/{i}.png')
 
 max_height = max([item[1] for item in text_sizes])
 
-text = 'The quick brown fox jumps\nover the lazy dog\n0123456789'
+# text = 'The quick brown fox jumps\nover the lazy dog\n0123456789'
+text = 'abcdefghijklmnopqrstuvwxyz\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n0123456789\n!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
+# print(f'{sorted(actual_ascii)=}')
 # text = actual_ascii
 
 # Split the text into lines based on \n
