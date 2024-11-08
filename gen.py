@@ -4,29 +4,30 @@ import json
 
 # Sizes for each character are [text_left, text_top, text_right, text_bottom], text_sizes are [text_right - text_left, text_bottom - text_top], positions are [(img_size[0] - text_size[0]) // 2, 0]
 char_images, sizes, text_sizes, positions, actual_ascii, space_width = generate_char_images(FONT_PATH)
+with open('font_info.json', 'w') as f:
+    json.dump([[item.tolist() for item in char_images], sizes, text_sizes, positions, actual_ascii, space_width], f)
+
 parsed_images = [item[:,:,0] for item in parse_tiled_image('out_images_2024-10-30T05-27-27-590906/images_42.png')]    
 
 assert len(char_images) == len(parsed_images)
 
 considering_opacity_images_binary = []
-considering_opacity_images = []
 for char_img, parsed_img in zip(char_images, parsed_images):
     considering_opacity = (parsed_img / (1.-char_img))
     cleaned_considering_opacity = np.nan_to_num(considering_opacity, nan=1.0, posinf=1.0, neginf=1.0)
-    considering_opacity_images.append(cleaned_considering_opacity)
     good_pixels = char_img == 0.0
     considering_opacity = np.ones_like(char_img)
     considering_opacity[good_pixels] = parsed_img[good_pixels]
     considering_opacity_images_binary.append(considering_opacity)
 
+with open('font_created.json', 'w') as f:
+    json.dump([item.tolist() for item in considering_opacity_images_binary], f)
 
 min_color = min([np.min(item[(item != 0.) & (item != 1.)]) for item in considering_opacity_images_binary])
 max_color = max([np.max(item[(item != 0.) & (item != 1.)]) for item in considering_opacity_images_binary])
-print(f'{min_color=}, {max_color=}')
-opacity_as_torch = torch.stack([torch.tensor(item, dtype=torch.float32) for item in considering_opacity_images_binary], dim=0)
+# print(f'{min_color=}, {max_color=}')
+# opacity_as_torch = torch.stack([torch.tensor(item, dtype=torch.float32) for item in considering_opacity_images_binary], dim=0)
 # save_img(opacity_as_torch, 'opacity_binary')
-opacity_as_torch = torch.stack([torch.tensor(item, dtype=torch.float32) for item in considering_opacity_images], dim=0)
-# save_img(opacity_as_torch, 'opacity')
 
 def rescale(img, old_min, old_max, new_min, new_max):
     rescaled_img = np.maximum(np.minimum(new_min + ((img - old_min) * (new_max - new_min) / (old_max - old_min)), 1.0), 0.0)
@@ -48,7 +49,7 @@ def mix_colors(img, color_min, color_max):
     return new_img
 # color_dark = [0, 0, 170] #purple
 # color_bright = [254, 1, 154] #pink
-color_dark = [110, 0, 0] #dark red
+color_dark = [100, 0, 0] #dark red
 color_bright = [255, 0, 0] #red
 # color_dark = [0, 0, 0] #black
 # color_bright = [200, 200, 0] #yellow
@@ -88,6 +89,7 @@ def extract_character_from_image(img_np_array, position, text_size, size):
 
     return character_crop
 
+max_height = max([item[1] for item in text_sizes])
 os.makedirs('extracted', exist_ok=True)
 to_pil = T.ToPILImage()
 final_extracted_char = []
@@ -96,9 +98,7 @@ for i in range(len(masked)):
     crop = extract_character_from_image(current_image, positions[i], text_sizes[i], sizes[i])
     as_pil = to_pil(torch.tensor(crop, dtype=torch.float32))
     final_extracted_char.append(as_pil)
-    # as_pil.save(f'extracted/{i}.png')
-
-max_height = max([item[1] for item in text_sizes])
+    as_pil.save(f'extracted/{i}.png')
 
 # text = 'The quick brown fox jumps\nover the lazy dog\n0123456789'
 text = 'abcdefghijklmnopqrstuvwxyz\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n0123456789\n!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'

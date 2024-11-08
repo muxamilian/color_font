@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Font Image Display</title>
+  <style>
+    canvas {
+      border: 1px solid black;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="fontCanvas" width="800" height="400"></canvas>
+  <script>
+async function loadJson(url) {
+  const response = await fetch(url);
+  return response.json();
+}
+
+function rescale(img, oldMin, oldMax, newMin, newMax) {
+  return img.map(row => row.map(pixel => {
+    if (pixel === 1) return 1.0;
+    return Math.min(Math.max(newMin + ((pixel - oldMin) * (newMax - newMin) / (oldMax - oldMin)), 0.0), 1.0);
+  }));
+}
+
+function mixColors(img, colorMin, colorMax) {
+  const mixedImg = img.map(row => row.map(pixel => {
+    return [
+      Math.round((1 - pixel) * colorMin[0] + pixel * colorMax[0]),
+      Math.round((1 - pixel) * colorMin[1] + pixel * colorMax[1]),
+      Math.round((1 - pixel) * colorMin[2] + pixel * colorMax[2]),
+      255
+    ];
+  }));
+  return mixedImg;
+}
+
+function drawCharacter(ctx, image, x, y) {
+  const imageData = ctx.createImageData(image[0].length, image.length);
+  for (let i = 0; i < image.length; i++) {
+    for (let j = 0; j < image[i].length; j++) {
+      const index = (i * image[i].length + j) * 4;
+      imageData.data[index] = image[i][j][0];
+      imageData.data[index + 1] = image[i][j][1];
+      imageData.data[index + 2] = image[i][j][2];
+      imageData.data[index + 3] = image[i][j][3];
+    }
+  }
+  ctx.putImageData(imageData, x, y);
+}
+
+function applyMask(colorMixed, charImage) {
+  // masked = [np.concatenate((item * (1.-char[:,:,None]) + char[:,:,None], 
+  // np.ones_like(char[:,:,None])), axis=-1) for item, char in zip(color_mixed, char_images)]
+  return colorMixed.map((row, i) =>
+    row.map((pixel, j) => {
+      // const alpha = charImage[i][j] === 0 ? 0 : 255;
+      current_char = charImage[i][j];
+      return [pixel[0] * (1.-current_char) + current_char * 255, pixel[1] * (1.-current_char) + current_char * 255, pixel[2] * (1.-current_char) + current_char * 255, 255];
+    })
+  );
+}
+
+async function displayFont() {
+  const fontInfo = await loadJson('font_info.json');
+  const fontCreated = await loadJson('font_created.json');
+  
+  const [charImages, sizes, textSizes, positions, actualAscii, spaceWidth] = fontInfo;
+  const consideringOpacityImagesBinary = fontCreated;
+
+  function findMinColor(arr) {
+    let minColor = Infinity; // Start with the highest possible value for comparison
+
+    function processArray(subArray) {
+        for (const item of subArray) {
+            if (Array.isArray(item)) {
+                processArray(item); // Recursively process nested arrays
+            } else if (item !== 0 && item !== 1) {
+                minColor = Math.min(minColor, item); // Update minColor if the item is valid
+            }
+        }
+    }
+
+    processArray(arr); // Start processing the main array
+    return minColor === Infinity ? null : minColor; // Return null if no valid items were found
+  }
+
+  const minColor = findMinColor(consideringOpacityImagesBinary);
+
+  function findMaxColor(arr) {
+    let maxColor = -Infinity; // Start with the highest possible value for comparison
+
+    function processArray(subArray) {
+        for (const item of subArray) {
+            if (Array.isArray(item)) {
+                processArray(item); // Recursively process nested arrays
+            } else if (item !== 0 && item !== 1) {
+                maxColor = Math.max(maxColor, item); // Update maxColor if the item is valid
+            }
+        }
+    }
+
+    processArray(arr); // Start processing the main array
+    return maxColor === -Infinity ? null : maxColor; // Return null if no valid items were found
+  }
+
+  const maxColor = findMaxColor(consideringOpacityImagesBinary);
+  console.log('minColor', minColor, 'maxColor', maxColor);
+
+  const colorDark = [100, 0, 0];
+  const colorBright = [255, 0, 0];
+
+  const rescaledImages = consideringOpacityImagesBinary.map(item => rescale(item, minColor, maxColor, 0, 1));
+  const colorMixedImages = rescaledImages.map(item => mixColors(item, colorDark, colorBright));
+  // Create masked images by combining colorMixedImages with charImages for alpha channel
+  const maskedImages = colorMixedImages.map((colorMixed, index) =>
+    applyMask(colorMixed, charImages[index])
+  );
+
+  const canvas = document.getElementById('fontCanvas');
+  const ctx = canvas.getContext('2d');
+  
+  const maxHeight = Math.max(...textSizes.map(size => size[1]));
+  // const text = 'abcdefghijklmnopqrstuvwxyz\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n0123456789\n!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~';
+  const text = 'a';
+  const lines = text.split('\n');
+
+  const lineWidths = [];
+  const lineCumWidths = [];
+  
+  lines.forEach(line => {
+    let sumWidth = 0;
+    const cumWidths = [];
+    for (let char of line) {
+      if (char === ' ') {
+        cumWidths.push(sumWidth);
+        sumWidth += spaceWidth;
+      } else {
+        const index = actualAscii.indexOf(char);
+        cumWidths.push(sumWidth);
+        sumWidth += textSizes[index][0];
+      }
+    }
+    lineWidths.push(sumWidth);
+    lineCumWidths.push(cumWidths);
+  });
+
+  const totalHeight = maxHeight * lines.length;
+  const maxLineWidth = Math.max(...lineWidths);
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, maxLineWidth, totalHeight);
+
+  lines.forEach((line, lineIndex) => {
+    const lineWidth = lineWidths[lineIndex];
+    const cumWidths = lineCumWidths[lineIndex];
+    const yOffset = lineIndex * maxHeight;
+    const xOffset = (maxLineWidth - lineWidth) / 2;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === ' ') continue;
+
+      const index = actualAscii.indexOf(char);
+      const img = maskedImages[index];
+      const charPosVert = sizes[index][1];
+      drawCharacter(ctx, img, xOffset + cumWidths[i], yOffset + charPosVert - Math.min(...sizes.map(size => size[1])));
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', displayFont);
+  </script>
+</body>
+</html>
