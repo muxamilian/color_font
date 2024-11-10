@@ -11,7 +11,7 @@
   </style>
 </head>
 <body>
-  <canvas id="fontCanvas" width="800" height="400"></canvas>
+  <canvas id="fontCanvas" width="0" height="0"></canvas>
   <script>
 async function loadJson(url) {
   const response = await fetch(url);
@@ -146,13 +146,9 @@ async function displayFont() {
     return character_crop
   }
 
-  const final_images = maskedImages.map((img, i) => extract_character_from_image(img, positions[i], textSizes[i], sizes[i]))
-
-  const canvas = document.getElementById('fontCanvas');
-  const ctx = canvas.getContext('2d');
-  
+  const final_images = maskedImages.map((img, i) => extract_character_from_image(img, positions[i], textSizes[i], sizes[i]))  
   const maxHeight = Math.max(...textSizes.map(size => size[1]));
-  const text = 'abc123';
+  const text = 'abc 123\nGabi & Max\nforever';
   const lines = text.split('\n');
 
   const lineWidths = [];
@@ -177,6 +173,14 @@ async function displayFont() {
 
   const totalHeight = maxHeight * lines.length;
   const maxLineWidth = Math.max(...lineWidths);
+
+  // Get a reference to the canvas element
+  const canvas = document.getElementById("fontCanvas");
+  // Set the width and height dynamically
+  canvas.width = maxLineWidth;  // Sets width to the width of the window
+  canvas.height = totalHeight; // Sets height to the height of the window
+
+  const ctx = canvas.getContext('2d');
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = 'white';
