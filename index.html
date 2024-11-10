@@ -18,6 +18,24 @@ async function loadJson(url) {
   return response.json();
 }
 
+function cropImageArray(imgArray, top, bottom, left, right) {
+    let croppedArray = [];
+    
+    // Loop through the rows of the original array, from 'top' to 'bottom'
+    for (let i = top; i < bottom; i++) {
+        let row = [];
+        
+        // Loop through each row's columns, from 'left' to 'right'
+        for (let j = left; j < right; j++) {
+            row.push(imgArray[i][j]);
+        }
+        
+        croppedArray.push(row);
+    }
+    
+    return croppedArray;
+}
+
 function rescale(img, oldMin, oldMax, newMin, newMax) {
   return img.map(row => row.map(pixel => {
     if (pixel === 1) return 1.0;
@@ -52,11 +70,8 @@ function drawCharacter(ctx, image, x, y) {
 }
 
 function applyMask(colorMixed, charImage) {
-  // masked = [np.concatenate((item * (1.-char[:,:,None]) + char[:,:,None], 
-  // np.ones_like(char[:,:,None])), axis=-1) for item, char in zip(color_mixed, char_images)]
   return colorMixed.map((row, i) =>
     row.map((pixel, j) => {
-      // const alpha = charImage[i][j] === 0 ? 0 : 255;
       current_char = charImage[i][j];
       return [pixel[0] * (1.-current_char) + current_char * 255, pixel[1] * (1.-current_char) + current_char * 255, pixel[2] * (1.-current_char) + current_char * 255, 255];
     })
@@ -119,12 +134,25 @@ async function displayFont() {
     applyMask(colorMixed, charImages[index])
   );
 
+  function extract_character_from_image(img_array, position, text_size, size) {
+    // Calculate the bounds of the crop
+    let [x, y] = position
+    let [width, height] = text_size
+    let [left, right] = [x, x + width]
+    let [top, bottom] = [y + size[1], y + size[1] + height]
+
+    character_crop = cropImageArray(img_array, top, bottom, left, right)
+
+    return character_crop
+  }
+
+  const final_images = maskedImages.map((img, i) => extract_character_from_image(img, positions[i], textSizes[i], sizes[i]))
+
   const canvas = document.getElementById('fontCanvas');
   const ctx = canvas.getContext('2d');
   
   const maxHeight = Math.max(...textSizes.map(size => size[1]));
-  // const text = 'abcdefghijklmnopqrstuvwxyz\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n0123456789\n!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~';
-  const text = 'a';
+  const text = 'abc123';
   const lines = text.split('\n');
 
   const lineWidths = [];
@@ -165,7 +193,7 @@ async function displayFont() {
       if (char === ' ') continue;
 
       const index = actualAscii.indexOf(char);
-      const img = maskedImages[index];
+      const img = final_images[index];
       const charPosVert = sizes[index][1];
       drawCharacter(ctx, img, xOffset + cumWidths[i], yOffset + charPosVert - Math.min(...sizes.map(size => size[1])));
     }
