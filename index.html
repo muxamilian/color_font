@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Font Image Display</title>
+  <title>Beautyfont</title>
   <style>
     canvas {
       border: 1px solid black;
@@ -11,8 +11,47 @@
   </style>
 </head>
 <body>
+  <p style="display: flex; align-items: start;">
+    <textarea id="textBox" oninput="autoResize(this)">abc123</textarea>
+    #<input type="text" id="color1" value="640000">
+    #<input type="text" id="color2" value="FF0000">
+    <button onclick="displayFont(document.getElementById('textBox').value, hexToRgb(document.getElementById('color1').value), hexToRgb(document.getElementById('color2').value))">Display Font</button>
+    <button onclick="downloadCanvasAsPNG()">Download Image</button>
+  </p>
+  <p>
   <canvas id="fontCanvas" width="0" height="0"></canvas>
+  </p>
   <script>
+function hexToRgb(hex) {
+    // Remove the hash at the start if it's there
+    hex = hex.replace(/^#/, '');
+
+    // Check if hex is a valid 6-digit hex color code
+    if (hex.length !== 6 || !/^[0-9A-Fa-f]{6}$/.test(hex)) {
+        throw new Error('Invalid hex color code');
+    }
+
+    // Convert each pair of hex digits to decimal (0-255)
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+
+    return [r, g, b];
+}
+
+function downloadCanvasAsPNG() {
+        const canvas = document.getElementById('fontCanvas');
+        const image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+
+        // Create a link element
+        const link = document.createElement('a');
+        link.href = image;
+        link.download = 'beautyfont.png';
+
+        // Trigger the download
+        link.click();
+}
+
 async function loadJson(url) {
   const response = await fetch(url);
   return response.json();
@@ -78,7 +117,19 @@ function applyMask(colorMixed, charImage) {
   );
 }
 
-async function displayFont() {
+function compareBrightness(rgb1, rgb2) {
+    function getBrightness([r, g, b]) {
+        // return 0.299 * r + 0.587 * g + 0.114 * b;
+        return r + g + b;
+    }
+
+    const brightness1 = getBrightness(rgb1);
+    const brightness2 = getBrightness(rgb2);
+
+    return brightness1 >= brightness2 ? [rgb1, rgb2] : [rgb2, rgb1];
+}
+
+async function displayFont(text, color1, color2) {
   const fontInfo = await loadJson('font_info.json');
   const fontCreated = await loadJson('font_created.json');
   
@@ -124,8 +175,7 @@ async function displayFont() {
   const maxColor = findMaxColor(consideringOpacityImagesBinary);
   console.log('minColor', minColor, 'maxColor', maxColor);
 
-  const colorDark = [100, 0, 0];
-  const colorBright = [255, 0, 0];
+  const [colorBright, colorDark] = compareBrightness(color1, color2);
 
   const rescaledImages = consideringOpacityImagesBinary.map(item => rescale(item, minColor, maxColor, 0, 1));
   const colorMixedImages = rescaledImages.map(item => mixColors(item, colorDark, colorBright));
@@ -146,9 +196,9 @@ async function displayFont() {
     return character_crop
   }
 
-  const final_images = maskedImages.map((img, i) => extract_character_from_image(img, positions[i], textSizes[i], sizes[i]))  
+  // const final_images = maskedImages.map((img, i) => extract_character_from_image(img, positions[i], textSizes[i], sizes[i]))  
+  const final_images = maskedImages;
   const maxHeight = Math.max(...textSizes.map(size => size[1]));
-  const text = 'abc 123\nGabi & Max\nforever';
   const lines = text.split('\n');
 
   const lineWidths = [];
@@ -204,7 +254,16 @@ async function displayFont() {
   });
 }
 
-document.addEventListener('DOMContentLoaded', displayFont);
+function autoResize(textarea) {
+    textarea.style.height = 'auto'; // Reset height to recalculate based on content
+    textarea.style.height = textarea.scrollHeight + 'px'; // Set height to match content
+  }
+
+window.onload = () => {
+            const textBox = document.getElementById("textBox");
+            autoResize(textBox);
+            displayFont(textBox.value, hexToRgb(document.getElementById('color1').value), hexToRgb(document.getElementById('color2').value))
+        };
   </script>
 </body>
 </html>

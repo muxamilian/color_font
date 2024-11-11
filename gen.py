@@ -4,10 +4,32 @@ import json
 
 # Sizes for each character are [text_left, text_top, text_right, text_bottom], text_sizes are [text_right - text_left, text_bottom - text_top], positions are [(img_size[0] - text_size[0]) // 2, 0]
 char_images, sizes, text_sizes, positions, actual_ascii, space_width = generate_char_images(FONT_PATH)
+
+def extract_character_from_image(img_np_array, position, text_size, size):
+    # Calculate the bounds of the crop
+    x, y = position
+    width, height = text_size
+    left, right = x, x + width
+    top, bottom = y + size[1], y + size[1] + height
+
+    # Crop the region in the PyTorch format (C, H, W)
+    if len(img_np_array.shape) > 2:
+        character_crop = img_np_array[:, top:bottom, left:right]
+    else:
+        character_crop = img_np_array[top:bottom, left:right]
+
+    return character_crop
+
+for i in range(len(char_images)):
+    char_images[i] = extract_character_from_image(char_images[i], positions[i], text_sizes[i], sizes[i])
+
 with open('font_info.json', 'w') as f:
     json.dump([[item.tolist() for item in char_images], sizes, text_sizes, positions, actual_ascii, space_width], f)
 
 parsed_images = [item[:,:,0] for item in parse_tiled_image('out_images_2024-10-30T05-27-27-590906/images_42.png')]    
+
+for i in range(len(parsed_images)):
+    parsed_images[i] = extract_character_from_image(parsed_images[i], positions[i], text_sizes[i], sizes[i])
 
 assert len(char_images) == len(parsed_images)
 
@@ -45,7 +67,7 @@ for i, rescaled_img in enumerate(rescaled_images):
 rescaled_images = [rescale(item, min_color, max_color, 0.0, 1.0) for item in considering_opacity_images_binary]
 
 def mix_colors(img, color_min, color_max):
-    new_img = np.tile(color_min[None, None, :], (224,224,1)) * (1.-img[:,:,None]) + img[:,:,None] * np.tile(color_max[None, None, :], (224,224,1))
+    new_img = np.tile(color_min[None, None, :], (img.shape[0],img.shape[1],1)) * (1.-img[:,:,None]) + img[:,:,None] * np.tile(color_max[None, None, :], (img.shape[0],img.shape[1],1))
     return new_img
 # color_dark = [0, 0, 170] #purple
 # color_bright = [254, 1, 154] #pink
@@ -77,26 +99,13 @@ masked = [np.concatenate((item * (1.-char[:,:,None]) + char[:,:,None], np.ones_l
 
 # save_img(torch.stack([torch.tensor(np.transpose(item, (2, 0, 1)), dtype=torch.float32) for item in masked], dim=0), 'final')
 
-def extract_character_from_image(img_np_array, position, text_size, size):
-    # Calculate the bounds of the crop
-    x, y = position
-    width, height = text_size
-    left, right = x, x + width
-    top, bottom = y + size[1], y + size[1] + height
-
-    # Crop the region in the PyTorch format (C, H, W)
-    character_crop = img_np_array[:, top:bottom, left:right]
-
-    return character_crop
-
 max_height = max([item[1] for item in text_sizes])
 os.makedirs('extracted', exist_ok=True)
 to_pil = T.ToPILImage()
 final_extracted_char = []
 for i in range(len(masked)):
     current_image = np.transpose(masked[i], (2, 0, 1))
-    crop = extract_character_from_image(current_image, positions[i], text_sizes[i], sizes[i])
-    as_pil = to_pil(torch.tensor(crop, dtype=torch.float32))
+    as_pil = to_pil(torch.tensor(current_image, dtype=torch.float32))
     final_extracted_char.append(as_pil)
     as_pil.save(f'extracted/{i}.png')
 
