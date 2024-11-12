@@ -3,23 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Beautyfont</title>
+  <title>Legigrad Font</title>
   <style>
-    canvas {
-      border: 1px solid black;
-    }
+  body {
+    margin-left: 15px;
+  }
+  #top-form > span {
+    padding-left: 25px;
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  #top-form {
+    display: block;
+  }
+
+  #top-form span button {
+    height: 27px;
+    vertical-align: middle;
+  }
+
+  #top-form textarea {
+    vertical-align: middle;
+  }
+
+  #top-form input[type="color"] {
+    vertical-align: middle;
+  }
   </style>
 </head>
 <body>
-  <p style="display: flex; align-items: start;">
+  <p id="top-form">
     <textarea id="textBox" oninput="autoResize(this)">abc123</textarea>
-    #<input type="text" id="color1" value="640000">
-    #<input type="text" id="color2" value="FF0000">
-    <button onclick="displayFont(document.getElementById('textBox').value, hexToRgb(document.getElementById('color1').value), hexToRgb(document.getElementById('color2').value))">Display Font</button>
-    <button onclick="downloadCanvasAsPNG()">Download Image</button>
+    <span>Color #1<input style="display: block" type="color" id="color1" value="#640000"></span>
+    <span>Color #2<input style="display: block" type="color" id="color2" value="#ff0000"></span>
+    <span><button onclick="displayFont(document.getElementById('textBox').value, hexToRgb(document.getElementById('color1').value), hexToRgb(document.getElementById('color2').value))">Display Font</button></span>
   </p>
   <p>
   <canvas id="fontCanvas" width="0" height="0"></canvas>
+  </p>
+  <p>
+    <button onclick="downloadCanvasAsPNG()">Download Image</button>
   </p>
   <script>
 function hexToRgb(hex) {
@@ -46,7 +70,7 @@ function downloadCanvasAsPNG() {
         // Create a link element
         const link = document.createElement('a');
         link.href = image;
-        link.download = 'beautyfont.png';
+        link.download = 'legigrad.png';
 
         // Trigger the download
         link.click();

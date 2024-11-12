@@ -100,14 +100,14 @@ masked = [np.concatenate((item * (1.-char[:,:,None]) + char[:,:,None], np.ones_l
 # save_img(torch.stack([torch.tensor(np.transpose(item, (2, 0, 1)), dtype=torch.float32) for item in masked], dim=0), 'final')
 
 max_height = max([item[1] for item in text_sizes])
-os.makedirs('extracted', exist_ok=True)
+# os.makedirs('extracted', exist_ok=True)
 to_pil = T.ToPILImage()
 final_extracted_char = []
 for i in range(len(masked)):
     current_image = np.transpose(masked[i], (2, 0, 1))
     as_pil = to_pil(torch.tensor(current_image, dtype=torch.float32))
     final_extracted_char.append(as_pil)
-    as_pil.save(f'extracted/{i}.png')
+    # as_pil.save(f'extracted/{i}.png')
 
 # text = 'The quick brown fox jumps\nover the lazy dog\n0123456789'
 text = 'abcdefghijklmnopqrstuvwxyz\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n0123456789\n!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
