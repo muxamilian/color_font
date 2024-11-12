@@ -11,8 +11,11 @@
   body {
     margin-left: 15px;
   }
+  #top-form > span > span {
+    font-size: smaller;
+  }
   #top-form > span {
-    padding-left: 25px;
+    padding-left: 20px;
     display: inline-block;
     vertical-align: middle;
   }
@@ -38,8 +41,8 @@
 <body>
   <p id="top-form">
     <textarea cols="8" id="textBox" oninput="autoResize(this)">abc123</textarea>
-    <span>Color #1<input style="display: block" type="color" id="color1" value="#640000"></span>
-    <span>Color #2<input style="display: block" type="color" id="color2" value="#ff0000"></span>
+    <span><span>Color #1</span><input style="display: block" type="color" id="color1" value="#640000"></span>
+    <span><span>Color #2</span><input style="display: block" type="color" id="color2" value="#ff0000"></span>
     <span><button onclick="displayFont(document.getElementById('textBox').value, hexToRgb(document.getElementById('color1').value), hexToRgb(document.getElementById('color2').value))">Display Font</button></span>
   </p>
   <p>
