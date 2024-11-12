@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Legigrad Font</title>
   <style>
+  canvas {
+    max-width: 100%;
+  }
   body {
     margin-left: 15px;
   }
@@ -34,7 +37,7 @@
 </head>
 <body>
   <p id="top-form">
-    <textarea id="textBox" oninput="autoResize(this)">abc123</textarea>
+    <textarea cols="8" id="textBox" oninput="autoResize(this)">abc123</textarea>
     <span>Color #1<input style="display: block" type="color" id="color1" value="#640000"></span>
     <span>Color #2<input style="display: block" type="color" id="color2" value="#ff0000"></span>
     <span><button onclick="displayFont(document.getElementById('textBox').value, hexToRgb(document.getElementById('color1').value), hexToRgb(document.getElementById('color2').value))">Display Font</button></span>
