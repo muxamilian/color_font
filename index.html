@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Legigrad Font</title>
   <style>
   canvas {
@@ -40,7 +40,7 @@
 </head>
 <body>
   <p id="top-form">
-    <textarea cols="8" id="textBox" oninput="autoResize(this)">abc123</textarea>
+    <textarea cols="6" style="font-size: 16px;" id="textBox" oninput="autoResize(this)">abc123</textarea>
     <span><span>Color #1</span><input style="display: block" type="color" id="color1" value="#640000"></span>
     <span><span>Color #2</span><input style="display: block" type="color" id="color2" value="#ff0000"></span>
     <span><button onclick="displayFont(document.getElementById('textBox').value, hexToRgb(document.getElementById('color1').value), hexToRgb(document.getElementById('color2').value))">Display Font</button></span>
