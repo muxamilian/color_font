@@ -254,13 +254,18 @@ async function displayFont(text, color1, color2) {
   const totalHeight = maxHeight * lines.length;
   const maxLineWidth = Math.max(...lineWidths);
 
+  const scale = window.devicePixelRatio || 1;
   // Get a reference to the canvas element
   const canvas = document.getElementById("fontCanvas");
-  // Set the width and height dynamically
+  const ctx = canvas.getContext('2d');
+
+  const displayWidth = maxLineWidth/2;
+  const displayHeight = totalHeight/2;
+  canvas.style.width = `${displayWidth}px`;
+  canvas.style.height = `${displayHeight}px`;
+
   canvas.width = maxLineWidth;  // Sets width to the width of the window
   canvas.height = totalHeight; // Sets height to the height of the window
-
-  const ctx = canvas.getContext('2d');
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = 'white';
