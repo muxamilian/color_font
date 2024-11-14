@@ -47,9 +47,11 @@
   </p>
   <p>
   <canvas id="fontCanvas" width="0" height="0"></canvas>
+  <!-- <canvas style="display: none" id="hiddenCanvas" width="0" height="0"></canvas> -->
+  <canvas id="hiddenCanvas" width="0" height="0"></canvas>
   </p>
   <p>
-    <button style="height: 16px; font-size: 10px" onclick="downloadCanvasAsPNG()">Download Image</button>
+    <button onclick="downloadCanvasAsPNG()">Download Image</button>
   </p>
   <script>
 function hexToRgb(hex) {
@@ -254,15 +256,14 @@ async function displayFont(text, color1, color2) {
   const totalHeight = maxHeight * lines.length;
   const maxLineWidth = Math.max(...lineWidths);
 
-  const scale = window.devicePixelRatio || 1;
   // Get a reference to the canvas element
-  const canvas = document.getElementById("fontCanvas");
+  const canvas = document.getElementById("hiddenCanvas");
   const ctx = canvas.getContext('2d');
 
   const displayWidth = maxLineWidth/2;
   const displayHeight = totalHeight/2;
-  canvas.style.width = `${displayWidth}px`;
-  canvas.style.height = `${displayHeight}px`;
+  // canvas.style.width = `${displayWidth}px`;
+  // canvas.style.height = `${displayHeight}px`;
 
   canvas.width = maxLineWidth;  // Sets width to the width of the window
   canvas.height = totalHeight; // Sets height to the height of the window
@@ -287,6 +288,40 @@ async function displayFont(text, color1, color2) {
       drawCharacter(ctx, img, xOffset + cumWidths[i], yOffset + charPosVert - Math.min(...sizes.map(size => size[1])));
     }
   });
+
+  const originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const originalPixels = originalImageData.data;
+
+  const visible_canvas = document.getElementById("fontCanvas");
+  visible_canvas.width = displayWidth;
+  visible_canvas.height = displayHeight;
+  const vis_ctx = canvas.getContext('2d');
+  const downscaledImageData = vis_ctx.createImageData(visible_canvas.width, visible_canvas.height);
+  const downscaledPixels = downscaledImageData.data;
+
+  for (let y = 0; y < canvas.height; y += 2) {
+    for (let x = 0; x < canvas.width; x += 2) {
+        // Calculate indices for the 4 pixels in the 2x2 block
+        const i1 = (y * canvas.width + x) * 4;
+        const i2 = ((y + 1) * canvas.width + x) * 4;
+        const i3 = (y * canvas.width + (x + 1)) * 4;
+        const i4 = ((y + 1) * canvas.width + (x + 1)) * 4;
+
+        // Average RGBA values
+        const avgR = (originalPixels[i1] + originalPixels[i2] + originalPixels[i3] + originalPixels[i4]) / 4;
+        const avgG = (originalPixels[i1 + 1] + originalPixels[i2 + 1] + originalPixels[i3 + 1] + originalPixels[i4 + 1]) / 4;
+        const avgB = (originalPixels[i1 + 2] + originalPixels[i2 + 2] + originalPixels[i3 + 2] + originalPixels[i4 + 2]) / 4;
+        const avgA = (originalPixels[i1 + 3] + originalPixels[i2 + 3] + originalPixels[i3 + 3] + originalPixels[i4 + 3]) / 4;
+
+        // Set averaged values to the downscaled pixel data
+        const downscaleIndex = ((y / 2) * visible_canvas.width + (x / 2)) * 4;
+        downscaledPixels[downscaleIndex] = avgR;
+        downscaledPixels[downscaleIndex + 1] = avgG;
+        downscaledPixels[downscaleIndex + 2] = avgB;
+        downscaledPixels[downscaleIndex + 3] = avgA;
+    }
+  }
+  vis_ctx.putImageData(downscaledImageData, 0, 0);
 }
 
 function autoResize(textarea) {
