@@ -40,7 +40,9 @@
 </head>
 <body>
   <p id="top-form">
-    <textarea cols="6" style="font-size: 16px;" id="textBox" oninput="autoResize(this)">abc123</textarea>
+    <textarea cols="8" style="font-size: 16px;" id="textBox" oninput="autoResize(this)">The quick brown fox jumps
+over the lazy dog
+0123456789</textarea>
     <span><span>Color #1</span><input style="display: block" type="color" id="color1" value="#640000"></span>
     <span><span>Color #2</span><input style="display: block" type="color" id="color2" value="#ff0000"></span>
     <span><button onclick="displayFont(document.getElementById('textBox').value, hexToRgb(document.getElementById('color1').value), hexToRgb(document.getElementById('color2').value))">Create Font</button></span>
