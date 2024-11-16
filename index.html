@@ -28,6 +28,10 @@
     font-size: inherit; /* Matches the surrounding font size */
   }
 
+  button img {
+    pointer-events: none;
+  }
+
   button#create-button img {
     vertical-align: middle;
     height: 26px;
@@ -95,7 +99,7 @@
 jumps over the lazy dog
 0123456789</textarea>
     <span class="color-container"><span>Color 1</span><input style="display: block" type="color" id="color1" value="#640000"></span>
-    <span class="color-container"><span>Color 2</span><input style="display: block" type="color" id="color2" value="#ff0000"></span>
+    <span class="color-container"><span>Color 2</span><input style="display: block" type="color" id="color2" value="#e32400"></span>
     <span><button id="create-button" onclick="displayFont(document.getElementById('textBox').value, hexToRgb(document.getElementById('color1').value), hexToRgb(document.getElementById('color2').value))"><img src="create.png"></button></span>
   </p>
   <p>
