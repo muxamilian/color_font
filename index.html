@@ -234,22 +234,30 @@ async function displayFont(text, color1, color2) {
   const lineWidths = [];
   const lineCumWidths = [];
   
+  var fail = false;
   lines.forEach(line => {
     let sumWidth = 0;
     const cumWidths = [];
+    let index;
     for (let char of line) {
       if (char === ' ') {
         cumWidths.push(sumWidth);
         sumWidth += spaceWidth;
-      } else {
-        const index = actualAscii.indexOf(char);
+      } else if ((index = actualAscii.indexOf(char)) != -1) {
         cumWidths.push(sumWidth);
         sumWidth += textSizes[index][0];
+      } else {
+        alert(char + ' not supported.')
+        fail = true;
+        return;
       }
     }
     lineWidths.push(sumWidth);
     lineCumWidths.push(cumWidths);
   });
+  if (fail) {
+    return;
+  }
 
   const totalHeight = maxHeight * lines.length;
   const maxLineWidth = Math.max(...lineWidths);
