@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Legigrad Font</title>
   <style>
+  @font-face {
+    font-family: globalFont;
+    src: url(Roboto-Regular.ttf);
+  }
+  * {
+    font-family: globalFont;
+  }
   textarea {
     border: 1px solid gray; /* 1px black border */
     border-radius: 4px; /* Adjust for desired rounded corner size */
@@ -13,12 +20,23 @@
     all: unset; /* Resets all default styles */
     border: 1px solid gray; /* 1px black border */
     border-radius: 8px; /* Adjust for desired rounded corner size */
-    padding: 0.2em 0.4em; /* Add padding for a better look */
+    padding: 0.2em 0.5em; /* Add padding for a better look */
     text-align: center; /* Center text */
     cursor: pointer; /* Pointer cursor on hover */
     background-color: transparent; /* Transparent background */
     font-family: inherit; /* Matches the surrounding font */
     font-size: inherit; /* Matches the surrounding font size */
+  }
+
+  button#create-button img {
+    height: 28px;
+    display: inline;
+  }
+
+  button#download-button img {
+    padding-top: 4px;
+    height: 20px;
+    display: inline;
   }
 
   button:hover {
@@ -67,13 +85,13 @@ jumps over the lazy dog
 0123456789</textarea>
     <span><span>Color #1</span><input style="display: block" type="color" id="color1" value="#640000"></span>
     <span><span>Color #2</span><input style="display: block" type="color" id="color2" value="#ff0000"></span>
-    <span><button onclick="displayFont(document.getElementById('textBox').value, hexToRgb(document.getElementById('color1').value), hexToRgb(document.getElementById('color2').value))">Create</button></span>
+    <span><button id="create-button" onclick="displayFont(document.getElementById('textBox').value, hexToRgb(document.getElementById('color1').value), hexToRgb(document.getElementById('color2').value))"><img src="create.png"></button></span>
   </p>
   <p>
   <canvas id="fontCanvas" width="0" height="0"></canvas>
   </p>
   <p>
-    <button onclick="downloadCanvasAsPNG()">Download Image</button>
+    <button id="download-button" onclick="downloadCanvasAsPNG()"><img src="download.png"></button>
   </p>
   <script>
 function hexToRgb(hex) {
@@ -166,7 +184,9 @@ function applyMask(colorMixed, charImage) {
   return colorMixed.map((row, i) =>
     row.map((pixel, j) => {
       current_char = charImage[i][j];
-      return [pixel[0] * (1.-current_char) + current_char * 255, pixel[1] * (1.-current_char) + current_char * 255, pixel[2] * (1.-current_char) + current_char * 255, 255];
+      // const c = (1.-current_char);
+      // const a = current_char * 255;
+      return [pixel[0], pixel[1], pixel[2], (1.-current_char) * 255];
     })
   );
 }
@@ -306,7 +326,7 @@ async function displayFont(text, color1, color2) {
   ctx.scale(scale, scale);
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = 'white';
+  ctx.fillStyle = "rgba(255, 255, 255, 0.0)";
   ctx.fillRect(0, 0, maxLineWidth, totalHeight);
 
   lines.forEach((line, lineIndex) => {
