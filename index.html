@@ -9,6 +9,22 @@
     font-family: globalFont;
     src: url(Roboto-Regular.ttf);
   }
+  @font-face {
+    font-family: globalFont;
+    src: url(Roboto-Bold.ttf);
+    font-weight: bold;
+  }
+  @font-face {
+    font-family: globalFont;
+    src: url(Roboto-Italic.ttf);
+    font-style: italic;
+  }
+  @font-face {
+    font-family: globalFont;
+    src: url(Roboto-BoldItalic.ttf);
+    font-style: italic;
+    font-weight: bold;
+  }
   * {
     font-family: globalFont;
   }
@@ -107,6 +123,18 @@ and press "Create".</textarea>
   </p>
   <p>
     <button id="download-button" onclick="downloadCanvasAsPNG()"><img src="download.png"></button>
+  </p>
+  <br>
+  <br>
+  <br>
+  <img src="how.png" style="height:50px;">
+  <p style="margin-block-start: 0.5em">
+    <b>Legi</b>ble <b>Grad</b>ient <b>Font</b>'s color gradients are algorithmically optimized to ensure maximum readability. 
+    Gradient descent and is used to optimize the gradients of each glyph so that they are as readable as possible. 
+    The code to create the Legigrad font is <a href="https://github.com/muxamilian/legigrad_font">open source</a>. The font itself based on the font <i>Roboto</i>. 
+  </p>
+  <p>
+  For example, capital "i", lowercase "L", "pipe" ("|"), exclamation mark and lower case "i" all look distinctively different because they have different color gradients: <img style="vertical-align:middle; height:40px; display: inline" src="similar.png">
   </p>
   <script>
 function hexToRgb(hex) {
