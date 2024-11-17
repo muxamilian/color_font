@@ -95,9 +95,9 @@
 </head>
 <body>
   <p id="top-form">
-    <textarea style="width: 35%; max-width: 300px; font-size: 16px;" id="textBox" oninput="autoResize(this)">The quick brown fox
-jumps over the lazy dog
-0123456789</textarea>
+    <textarea style="width: 35%; max-width: 300px; font-size: 16px;" id="textBox" oninput="autoResize(this)">Enter your text here the box.
+Choose "Color 1" and "Color 2"
+and press "Create".</textarea>
     <span class="color-container"><span>Color 1</span><input style="display: block" type="color" id="color1" value="#640000"></span>
     <span class="color-container"><span>Color 2</span><input style="display: block" type="color" id="color2" value="#ff0000"></span>
     <span><button id="create-button" onclick="displayFont(document.getElementById('textBox').value, hexToRgb(document.getElementById('color1').value), hexToRgb(document.getElementById('color2').value))"><img src="create.png"></button></span>
