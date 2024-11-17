@@ -107,6 +107,12 @@
     margin-left: auto;
     margin-right: auto;
   }
+  p img {
+    text-align: center;
+    vertical-align: middle; 
+    height: 40px; 
+    display: inline
+  }
   </style>
 </head>
 <body>
@@ -129,12 +135,11 @@ and press "Create".</textarea>
   <img src="how.png" style="height:40px;">
   <p style="margin-block-start: 0.5em">
     <b>Legi</b>ble <b>Grad</b>ient <b>Font</b>'s color gradients are algorithmically optimized to ensure maximum readability. 
-    Gradient descent and is used to optimize the gradients of each glyph so that they are as readable as possible. 
-    The code to create the Legigrad font is <a href="https://github.com/muxamilian/legigrad_font">open source</a>. The font itself based on the font <i>Roboto</i>. 
+    Gradient descent and a classification neural network are used to ensure that different glyphs have different color gradients pattern so that they are easily distinguishable. 
+    The code to create the Legigrad font is <a href="https://github.com/muxamilian/legigrad_font">open source</a>. The font itself based on the <i>Roboto</i>. 
   </p>
-  <p>
-  For example, capital "i", lowercase "L", "pipe" ("|"), exclamation mark and lower case "i" all look distinctively different because they have different color gradients: <img style="vertical-align:middle; height:40px; display: inline" src="similar.png">
-  </p>
+  <p>For example, capital "i", lowercase "L", "pipe" ("|"), exclamation mark and lower case "i" all look distinctively different because they have different color gradients:<br><img src="similar.png"></p>
+  <p>Another example are "c" and "o". The c is darker on the left side, while the o is dark on the right side, making them distinguishable:<br><img style="margin-top: -0.4em" src="co.png"></p>
   <script>
 function hexToRgb(hex) {
     // Remove the hash at the start if it's there
