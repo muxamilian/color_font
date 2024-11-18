@@ -360,7 +360,8 @@ async function displayFont(text, color1, color2) {
   const totalHeight = maxHeight * lines.length;
   const maxLineWidth = Math.max(...lineWidths);
 
-  const scale = window.devicePixelRatio || 1;
+  // const scale = window.devicePixelRatio || 1;
+  const scale = 2;
   // Get a reference to the canvas element
   const canvas = document.getElementById("fontCanvas");
   const ctx = canvas.getContext('2d');
