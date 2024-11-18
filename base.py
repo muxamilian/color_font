@@ -58,7 +58,7 @@ def generate_char_images(font_path, img_size=(224, 224)):
 def save_img(batch, name):
     
     n_columns = 10
-    n_images = batch.size(0)
+    n_images = len(batch)
     n_rows = (n_images + n_columns - 1) // n_columns  # Calculate required rows
 
     # Define a transform to convert the tensor to a PIL image
@@ -67,13 +67,35 @@ def save_img(batch, name):
     # Image size (assuming all images are the same size)
     img_width, img_height = 224, 224
 
+    def extend(img_pil):
+        nonlocal img_width, img_height
+        # Get the dimensions of the image
+        width, height = img_pil.size
+
+        # Check if the size is already 224x224
+        if width == img_width and height == img_height:
+            return img_pil  # No changes needed
+
+        # Create a new image with a black (or any color) background
+        new_img = Image.new("RGB", (224, 224), (0, 0, 0))  # Black background
+
+        # Calculate the position to center the original image
+        left = (img_width - width) // 2
+        top = (img_height - height) // 2
+
+        # Paste the original image onto the new image
+        new_img.paste(img_pil, (left, top))
+
+        return new_img
+
     # Create a blank canvas for the tiled image
     tiled_image = Image.new('RGB', (n_columns * img_width, n_rows * img_height))
 
     # Loop over each image and paste it on the canvas
     for i in range(n_images):
         img_tensor = batch[i]
-        img_pil = to_pil(img_tensor)  # Convert to PIL Image
+        
+        img_pil = extend(to_pil(img_tensor))  # Convert to PIL Image
         
         # Calculate position in the grid
         row = i // n_columns

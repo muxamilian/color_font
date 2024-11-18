@@ -33,23 +33,19 @@ for i in range(len(parsed_images)):
 
 assert len(char_images) == len(parsed_images)
 
-considering_opacity_images_binary = []
+considering_opacity_images = []
 for char_img, parsed_img in zip(char_images, parsed_images):
-    considering_opacity = (parsed_img / (1.-char_img))
-    cleaned_considering_opacity = np.nan_to_num(considering_opacity, nan=1.0, posinf=1.0, neginf=1.0)
-    good_pixels = char_img == 0.0
-    considering_opacity = np.ones_like(char_img)
-    considering_opacity[good_pixels] = parsed_img[good_pixels]
-    considering_opacity_images_binary.append(considering_opacity)
+    considering_opacity = parsed_img * (1.-char_img)
+    considering_opacity_images.append(considering_opacity)
 
 with open('font_created.json', 'w') as f:
-    json.dump([item.tolist() for item in considering_opacity_images_binary], f)
+    json.dump([item.tolist() for item in considering_opacity_images], f)
 
-min_color = min([np.min(item[(item != 0.) & (item != 1.)]) for item in considering_opacity_images_binary])
-max_color = max([np.max(item[(item != 0.) & (item != 1.)]) for item in considering_opacity_images_binary])
+min_color = min([np.min(item[(item != 0.) & (item != 1.)]) for item in considering_opacity_images])
+max_color = max([np.max(item[(item != 0.) & (item != 1.)]) for item in considering_opacity_images])
 # print(f'{min_color=}, {max_color=}')
-# opacity_as_torch = torch.stack([torch.tensor(item, dtype=torch.float32) for item in considering_opacity_images_binary], dim=0)
-# save_img(opacity_as_torch, 'opacity_binary')
+# opacity_as_torch = torch.stack([torch.tensor(item, dtype=torch.float32) for item in considering_opacity_images], dim=0)
+# save_img(considering_opacity_images, 'opacity')
 
 def rescale(img, old_min, old_max, new_min, new_max):
     rescaled_img = np.maximum(np.minimum(new_min + ((img - old_min) * (new_max - new_min) / (old_max - old_min)), 1.0), 0.0)
@@ -64,7 +60,7 @@ for i, rescaled_img in enumerate(rescaled_images):
 
 # save_img(torch.stack([torch.tensor(item, dtype=torch.float32) for item in rescaled_images], dim=0), 'rescaled')
 
-rescaled_images = [rescale(item, min_color, max_color, 0.0, 1.0) for item in considering_opacity_images_binary]
+rescaled_images = [rescale(item, min_color, max_color, 0.0, 1.0) for item in considering_opacity_images]
 
 def mix_colors(img, color_min, color_max):
     new_img = np.tile(color_min[None, None, :], (img.shape[0],img.shape[1],1)) * (1.-img[:,:,None]) + img[:,:,None] * np.tile(color_max[None, None, :], (img.shape[0],img.shape[1],1))
