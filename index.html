@@ -357,7 +357,7 @@ async function displayFont(text, color1, color2) {
     return;
   }
 
-  const totalHeight = maxHeight * lines.length;
+  const totalHeight = maxHeight * lines.length + 2;
   const maxLineWidth = Math.max(...lineWidths);
 
   // const scale = window.devicePixelRatio || 1;
