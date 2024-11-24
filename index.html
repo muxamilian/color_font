@@ -147,6 +147,8 @@ and press "Create".</textarea>
   </p>
   <p>For example, capital "i", lowercase "L", "pipe" ("|"), exclamation mark and lower case "i" all look distinctively different because they each have unique color gradients:<br><img src="similar.png"></p>
   <p>Another example are "c" and "o". The c is darker on the left side, while the o is dark on the right side, making them distinguishable:<br><img style="margin-top: -0.4em" src="co.png"></p>
+  <p>The glyphs are optimized by adding random noise and blur to the characters. Then, a Convolutional Neural Network (Resnet-18) tries to classify them. The gradients are applied to the neural network and <i>also to the glyphs themselves</i>. This way, the glyphs are changed so that the Neural Network can classify them as easily as possible. This results in the gradients. </p>
+  <img src="Legible Gradient Font.drawio.svg" style="width: 80%; margin: auto">
   <script>
 function hexToRgb(hex) {
     // Remove the hash at the start if it's there

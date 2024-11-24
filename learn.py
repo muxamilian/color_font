@@ -25,8 +25,8 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision.models as models
 import torch.nn.functional as F
-# mps_device = torch.device("mps")
-torch.set_default_device('cuda')
+mps_device = torch.device("mps")
+# torch.set_default_device('cuda')
 
 batch_size = 64
 
