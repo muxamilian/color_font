@@ -1,4 +1,4 @@
-Web demo: https://muxamilian.github.io/legigrad_font/
+Web demo: https://muxamilian.github.io/legible-gradient-font/
 
 The training code is in *learn.py*. 
 
