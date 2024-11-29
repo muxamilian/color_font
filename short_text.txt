@@ -1,0 +1,2 @@
+Legible Gradient Font's color gradients are algorithmically optimized to ensure maximum readability. Gradient descent and a classification neural network are employed to ensure that each glyph has a unique color gradient pattern, making them easily distinguishable. The code to create the Legible Gradient Font is open source. The font itself based on the Roboto. 
+Create your own text and more info: https://muxamilian.github.io/legible-gradient-font/
